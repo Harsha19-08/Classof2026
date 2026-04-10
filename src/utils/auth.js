@@ -2,7 +2,12 @@
 
 // Auth utility - API calls to backend
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+let API_URL = import.meta.env.VITE_API_URL || '/api';
+// Auto-correct if user forgot to append /api in their Vercel environment variable
+if (API_URL !== '/api' && !API_URL.endsWith('/api')) {
+  API_URL = API_URL.replace(/\/$/, '') + '/api';
+}
+
 const TOKEN_KEY = 'yearbook_token';
 const USER_KEY = 'yearbook_user';
 
