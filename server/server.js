@@ -46,7 +46,7 @@ async function seedAdmin() {
         role: 'admin',
         status: 'approved',
       });
-      console.log('✅ Admin account seeded: harsha@yearbook.com / admin123');
+     
     } else {
       console.log('✅ Admin account already exists');
     }
