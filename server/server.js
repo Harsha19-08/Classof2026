@@ -67,9 +67,7 @@ async function start() {
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log('');
-      console.log('📋 Admin credentials:');
-      console.log('   Email: harsha@yearbook.com');
-      console.log('   Password: admin123');
+      
       console.log('');
     });
   } catch (err) {
