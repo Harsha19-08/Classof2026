@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import WallMessage from '../models/WallMessage.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, optionalAuthenticate } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -14,18 +14,27 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/wall - Post a wall message (auth required)
-router.post('/', authenticate, async (req, res) => {
+// POST /api/wall - Post a wall message (optional auth)
+router.post('/', optionalAuthenticate, async (req, res) => {
   try {
-    const { text } = req.body;
+    const { text, isAnonymous } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'Message text is required.' });
     }
 
+    // Determine author and userId
+    let author = 'Anonymous';
+    let userId = null;
+
+    if (req.user && !isAnonymous) {
+      author = req.user.name;
+      userId = req.user._id;
+    }
+
     const message = await WallMessage.create({
       text: text.trim(),
-      author: req.user.name,
-      userId: req.user._id,
+      author,
+      userId,
     });
 
     res.status(201).json({ success: true, message });

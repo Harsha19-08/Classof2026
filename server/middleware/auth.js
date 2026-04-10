@@ -35,3 +35,24 @@ export function requireAdmin(req, res, next) {
   }
   next();
 }
+
+// Optional authentication (for anonymous endpoints)
+export async function optionalAuthenticate(req, res, next) {
+  try {
+    const header = req.headers.authorization;
+    if (!header || !header.startsWith('Bearer ')) {
+      return next(); // Proceed without req.user
+    }
+
+    const token = header.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (user && user.status === 'approved') {
+      req.user = user;
+    }
+  } catch (err) {
+    // Ignore token errors for optional routes
+  }
+  next();
+}
