@@ -233,12 +233,12 @@ export async function getWallMessages() {
   }
 }
 
-export async function postWallMessage(text) {
+export async function postWallMessage(text, isAnonymous = false) {
   try {
     const res = await fetch(`${API_URL}/wall`, {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, isAnonymous }),
     });
     const data = await res.json();
     return { success: res.ok, message: data.message, error: data.error };

@@ -21,6 +21,7 @@ export default function WallPage({ user }) {
   const [showForm, setShowForm] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   useEffect(() => {
     loadMessages();
@@ -36,7 +37,9 @@ export default function WallPage({ user }) {
   const handleSubmit = async () => {
     if (!newMessage.trim() || sending) return;
     setSending(true);
-    const result = await postWallMessage(newMessage);
+    // Determine anonymity
+    const actualAnonymous = !user ? true : isAnonymous;
+    const result = await postWallMessage(newMessage, actualAnonymous);
     setSending(false);
     if (result.success) {
       setNewMessage('');
@@ -132,24 +135,16 @@ export default function WallPage({ user }) {
         )}
       </div>
 
-      {/* Floating Write Button */}
-      {user && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="fixed bottom-8 right-8 z-30 flex items-center gap-2 px-6 py-3 bg-gold-500 hover:bg-gold-400 text-stone-900 font-semibold rounded-full shadow-[0_4px_20px_rgba(236,164,19,0.4)] hover:shadow-[0_4px_30px_rgba(236,164,19,0.6)] transition-all duration-300"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          Write a Message
-        </button>
-      )}
-
-      {!user && (
-        <div className="fixed bottom-8 right-8 z-30 px-5 py-3 bg-stone-800/80 backdrop-blur border border-stone-700/50 rounded-full text-stone-400 text-sm">
-          🔒 Sign in to write on the wall
-        </div>
-      )}
+      {/* Floating Write Button - Unlocked for everyone */}
+      <button
+        onClick={() => setShowForm(true)}
+        className="fixed bottom-8 right-8 z-30 flex items-center gap-2 px-6 py-3 bg-gold-500 hover:bg-gold-400 text-stone-900 font-semibold rounded-full shadow-[0_4px_20px_rgba(236,164,19,0.4)] hover:shadow-[0_4px_30px_rgba(236,164,19,0.6)] transition-all duration-300"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Write a Message
+      </button>
 
       {/* Write Message Modal */}
       {showForm && (
@@ -176,8 +171,21 @@ export default function WallPage({ user }) {
                 rows={4}
                 className="w-full px-4 py-3 bg-stone-800/50 border border-stone-700/80 rounded-lg text-stone-100 font-handwriting text-lg placeholder:text-stone-600 placeholder:font-sans placeholder:text-sm focus:outline-none focus:border-gold-500/50 resize-none"
               />
-              <div className="text-xs text-stone-600">
-                Posting as <span className="text-gold-500">{user?.name}</span>
+              <div className="flex items-center justify-between text-xs text-stone-600 mt-2">
+                {user ? (
+                  <>
+                    <span>Posting as <span className="text-gold-500">{isAnonymous ? 'Anonymous' : user.name}</span></span>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded border border-stone-600 flex items-center justify-center transition-colors ${isAnonymous ? 'bg-gold-500 border-gold-500' : 'group-hover:border-stone-400'}`}>
+                        {isAnonymous && <svg className="w-3 h-3 text-stone-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </div>
+                      <input type="checkbox" className="hidden" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} />
+                      <span className="text-stone-400 group-hover:text-stone-300">Post anonymously</span>
+                    </label>
+                  </>
+                ) : (
+                  <span>Posting as <span className="text-gold-500 italic">Anonymous</span></span>
+                )}
               </div>
               <button
                 onClick={handleSubmit}
