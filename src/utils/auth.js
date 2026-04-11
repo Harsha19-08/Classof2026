@@ -12,7 +12,9 @@ const TOKEN_KEY = 'yearbook_token';
 const USER_KEY = 'yearbook_user';
 
 function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || token === 'null' || token === 'undefined') return null;
+  return token;
 }
 
 function authHeaders() {

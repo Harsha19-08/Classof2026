@@ -37,22 +37,28 @@ export function requireAdmin(req, res, next) {
 }
 
 // Optional authentication (for anonymous endpoints)
+// This MUST NOT return 401, as it should allow guests to proceed.
 export async function optionalAuthenticate(req, res, next) {
   try {
     const header = req.headers.authorization;
     if (!header || !header.startsWith('Bearer ')) {
-      return next(); // Proceed without req.user
+      return next();
     }
 
     const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token || token === 'null' || token === 'undefined') {
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
     const user = await User.findById(decoded.id);
 
     if (user && user.status === 'approved') {
       req.user = user;
     }
   } catch (err) {
-    // Ignore token errors for optional routes
+    // Log for debugging if possible, but never return error status
+    console.log('Optional Auth ignored invalid token');
   }
   next();
 }
